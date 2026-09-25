@@ -1,0 +1,13 @@
+name: xeus-python-kernel
+channels:
+  - https://prefix.dev/emscripten-forge-4x
+  - https://prefix.dev/conda-forge
+dependencies:
+  - xeus-python
+  - numpy
+  - scipy
+  - pandas
+  - pip:
+      - ase==3.22.0
+      - termcolor
+      - tqdm

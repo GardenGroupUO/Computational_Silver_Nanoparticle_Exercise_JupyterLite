@@ -1,0 +1,165 @@
+
+--- a/Silver_Prism_Animation/silver_nanoprism_growing_model.py	2026-09-25 04:26:42.209177760 +0000
++++ b/Silver_Prism_Animation/silver_nanoprism_growing_model.py	2026-09-25 04:36:48.753131116 +0000
+@@ -10,7 +10,7 @@
+ 
+ 	from three_and_four_fold_sites import get_three_fold_sites, get_four_fold_sites
+ 	from three_and_four_fold_sites import get_applied_three_fold_sites, get_applied_four_fold_sites
+-	from three_and_four_fold_sites import get_positions_for_new_atoms, update_positions_for_new_atoms, same_position
++	from three_and_four_fold_sites import get_positions_for_new_atoms, update_positions_for_new_atoms, same_position, same_positions
+ 
+ 	from other_methods import determine_where_to_place_capping_Br
+ except Exception as ee:
+@@ -19,7 +19,7 @@
+ 
+ 	from Computational_Silver_Nanoparticle_Exercise_Data.Silver_Prism_Animation.three_and_four_fold_sites import get_three_fold_sites, get_four_fold_sites
+ 	from Computational_Silver_Nanoparticle_Exercise_Data.Silver_Prism_Animation.three_and_four_fold_sites import get_applied_three_fold_sites, get_applied_four_fold_sites
+-	from Computational_Silver_Nanoparticle_Exercise_Data.Silver_Prism_Animation.three_and_four_fold_sites import get_positions_for_new_atoms, update_positions_for_new_atoms, same_position
++	from Computational_Silver_Nanoparticle_Exercise_Data.Silver_Prism_Animation.three_and_four_fold_sites import get_positions_for_new_atoms, update_positions_for_new_atoms, same_position, same_positions
+ 
+ 	from Computational_Silver_Nanoparticle_Exercise_Data.Silver_Prism_Animation.other_methods import determine_where_to_place_capping_Br
+ 
+@@ -116,7 +116,7 @@
+ 
+ 		# If this position is found in the squ_pos_new_atoms and tri_pos_new_atoms lists, 
+ 		# remove them to prevent another atom being added to this site, as we are adding an atom to this site now.  
+-		if any([same_position(random_position,atom.position) for atom in system]):
++		if any(same_positions(random_position,system.positions)):
+ 			for index in range(len(squ_pos_new_atoms)-1,-1,-1):
+ 				check_position = squ_pos_new_atoms[index]
+ 				if same_position(random_position,check_position):
+
+--- a/Silver_Prism_Animation/silver_nanoprism_growing_model_with_capping_during_sim.py	2026-09-25 04:26:42.209177760 +0000
++++ b/Silver_Prism_Animation/silver_nanoprism_growing_model_with_capping_during_sim.py	2026-09-25 04:36:48.753347848 +0000
+@@ -12,7 +12,7 @@
+ 
+ 	from three_and_four_fold_sites import get_three_fold_sites, get_four_fold_sites
+ 	from three_and_four_fold_sites import get_applied_three_fold_sites, get_applied_four_fold_sites
+-	from three_and_four_fold_sites import get_positions_for_new_atoms, update_positions_for_new_atoms, same_position
++	from three_and_four_fold_sites import get_positions_for_new_atoms, update_positions_for_new_atoms, same_position, same_positions
+ 
+ 	from other_methods import determine_where_to_place_capping_Br
+ except Exception as ee:
+@@ -21,7 +21,7 @@
+ 
+ 	from Computational_Silver_Nanoparticle_Exercise_Data.Silver_Prism_Animation.three_and_four_fold_sites import get_three_fold_sites, get_four_fold_sites
+ 	from Computational_Silver_Nanoparticle_Exercise_Data.Silver_Prism_Animation.three_and_four_fold_sites import get_applied_three_fold_sites, get_applied_four_fold_sites
+-	from Computational_Silver_Nanoparticle_Exercise_Data.Silver_Prism_Animation.three_and_four_fold_sites import get_positions_for_new_atoms, update_positions_for_new_atoms, same_position
++	from Computational_Silver_Nanoparticle_Exercise_Data.Silver_Prism_Animation.three_and_four_fold_sites import get_positions_for_new_atoms, update_positions_for_new_atoms, same_position, same_positions
+ 
+ 	from Computational_Silver_Nanoparticle_Exercise_Data.Silver_Prism_Animation.other_methods import determine_where_to_place_capping_Br
+ 
+@@ -189,7 +189,7 @@
+ 
+ 			# If this position is found in the squ_pos_new_atoms and tri_pos_new_atoms lists, 
+ 			# remove them to prevent another atom being added to this site, as we are adding an atom to this site now.  
+-			if any([same_position(random_position,atom.position) for atom in system]):
++			if any(same_positions(random_position,system.positions)):
+ 				for index in range(len(squ_pos_new_atoms)-1,-1,-1):
+ 					check_position = squ_pos_new_atoms[index]
+ 					if same_position(random_position,check_position):
+
+--- a/Silver_Prism_Animation/three_and_four_fold_sites.py	2026-09-25 04:26:42.213177760 +0000
++++ b/Silver_Prism_Animation/three_and_four_fold_sites.py	2026-09-25 04:36:48.752837474 +0000
+@@ -189,6 +189,14 @@
+ 	return (cutoff**2.0 - distance_1_to_centre**2.0)**0.5
+ 
+ round_to_dp = 2
++
++def same_positions(add_position, positions):
++	"""Vectorised same_position: boolean array, one entry per position."""
++	positions = np.asarray(positions, dtype=float).reshape(-1, 3)
++	if len(positions) == 0:
++		return np.zeros(0, dtype=bool)
++	return np.linalg.norm(positions - np.asarray(add_position), axis=1) <= 2.0
++
+ def same_position(add_position,pos_new_atom):
+ 	#same_x = round(add_position[0],round_to_dp) == round(pos_new_atom[0],round_to_dp)
+ 	#same_y = round(add_position[1],round_to_dp) == round(pos_new_atom[1],round_to_dp)
+@@ -271,9 +279,9 @@
+ 		direction1 = cluster_positions[first_index] - cluster_positions[second_index]
+ 		direction2 = cluster_positions[third_index] - cluster_positions[second_index]
+ 		fourth_position = cluster_positions[second_index] + direction1 + direction2
+-		if any([same_position(add_position,pos_new_atom) for pos_new_atom in nearly_squ_pos_new_atoms]):
++		if any(same_positions(add_position,nearly_squ_pos_new_atoms)):
+ 			continue
+-		elif any([same_position(add_position,atom.position) for atom in system]):
++		elif any(same_positions(add_position,system.positions)):
+ 			continue
+ 		else:
+ 			nearly_squ_pos_new_atoms.append(add_position)
+@@ -284,11 +292,11 @@
+ 	for index1, index2, index3, index4 in squares:
+ 		add_positions = get_position_of_atom_above_square(index1, index2, index3, index4, cluster_positions, centre_of_mass)
+ 		for add_position in add_positions:
+-			if any([same_position(add_position,pos_new_atom) for pos_new_atom in squ_pos_new_atoms]):
++			if any(same_positions(add_position,squ_pos_new_atoms)):
+ 				continue
+-			elif any([same_position(add_position,pos_new_atom) for pos_new_atom in nearly_squ_pos_new_atoms]):
++			elif any(same_positions(add_position,nearly_squ_pos_new_atoms)):
+ 				continue
+-			elif any([same_position(add_position,atom_position) for atom_position in system.get_positions()]):
++			elif any(same_positions(add_position,system.get_positions())):
+ 				continue
+ 			else:
+ 				squ_pos_new_atoms.append(add_position)
+@@ -299,13 +307,13 @@
+ 	for index1, index2, index3 in triangles:
+ 		add_positions = get_position_of_atom_above_triangle(index1, index2, index3, cluster_positions, centre_of_mass)
+ 		for add_position in add_positions:
+-			if any([same_position(add_position,pos_new_atom) for pos_new_atom in tri_pos_new_atoms]):
++			if any(same_positions(add_position,tri_pos_new_atoms)):
+ 				continue
+-			elif any([same_position(add_position,pos_new_atom) for pos_new_atom in squ_pos_new_atoms]):
++			elif any(same_positions(add_position,squ_pos_new_atoms)):
+ 				continue
+-			elif any([same_position(add_position,pos_new_atom) for pos_new_atom in nearly_squ_pos_new_atoms]):
++			elif any(same_positions(add_position,nearly_squ_pos_new_atoms)):
+ 				continue
+-			elif any([same_position(add_position,atom_position) for atom_position in system.get_positions()]):
++			elif any(same_positions(add_position,system.get_positions())):
+ 				continue
+ 			else:
+ 				tri_pos_new_atoms.append(add_position)
+@@ -341,7 +349,7 @@
+ 			continue
+ 		add_positions = get_position_of_atom_above_square(index1, index2, index3, index4, cluster_positions, centre_of_mass)
+ 		for add_position in add_positions:
+-			pos_in_triangle = [same_position(add_position,pos_new_atom) for pos_new_atom in tri_pos_new_atoms]
++			pos_in_triangle = same_positions(add_position,tri_pos_new_atoms)
+ 			if any(pos_in_triangle):
+ 				indices_to_remove = list(compress(range(len(pos_in_triangle)), pos_in_triangle))
+ 				#if len(indices_to_remove) > 1:
+@@ -353,11 +361,11 @@
+ 				squ_pos_new_atoms.append(add_position)
+ 				squ_pos_new_atoms_indices.append((index1, index2, index3, index4))	
+ 				continue
+-			elif any([same_position(add_position,pos_new_atom) for pos_new_atom in squ_pos_new_atoms]):
++			elif any(same_positions(add_position,squ_pos_new_atoms)):
+ 				continue
+-			elif any([same_position(add_position,pos_new_atom) for pos_new_atom in nearly_squ_pos_new_atoms]):
++			elif any(same_positions(add_position,nearly_squ_pos_new_atoms)):
+ 				continue
+-			elif any([same_position(add_position,atom_position) for atom_position in cluster_positions]):
++			elif any(same_positions(add_position,cluster_positions)):
+ 				continue
+ 			else:
+ 				squ_pos_new_atoms.append(add_position)
+@@ -373,13 +381,13 @@
+ 			continue
+ 		add_positions = get_position_of_atom_above_triangle(index1, index2, index3, cluster_positions, centre_of_mass)
+ 		for add_position in add_positions:
+-			if any([same_position(add_position,pos_new_atom) for pos_new_atom in tri_pos_new_atoms]):
++			if any(same_positions(add_position,tri_pos_new_atoms)):
+ 				continue
+-			elif any([same_position(add_position,pos_new_atom) for pos_new_atom in squ_pos_new_atoms]):
++			elif any(same_positions(add_position,squ_pos_new_atoms)):
+ 				continue
+-			elif any([same_position(add_position,pos_new_atom) for pos_new_atom in nearly_squ_pos_new_atoms]):
++			elif any(same_positions(add_position,nearly_squ_pos_new_atoms)):
+ 				continue
+-			elif any([same_position(add_position,atom_position) for atom_position in cluster_positions]):
++			elif any(same_positions(add_position,cluster_positions)):
+ 				continue
+ 			else:
+ 				tri_pos_new_atoms.append(add_position)

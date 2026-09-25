@@ -1,0 +1,47 @@
+--- a/Organisms/GA/SCM_Scripts/A_SCM_Methods.py	2026-09-25 04:26:43.010797048 +0000
++++ b/Organisms/GA/SCM_Scripts/A_SCM_Methods.py	2026-09-25 04:43:34.452368341 +0000
+@@ -5,7 +5,6 @@
+ 
+ '''
+ 
+-from asap3.analysis.localstructure import FullCNA
+ from collections import Counter
+ import multiprocessing as mp
+ 
+@@ -21,6 +20,7 @@
+ 	:returns: The atomic CNA profile.
+ 	:rtype:   Counter
+ 	"""
++	from asap3.analysis.localstructure import FullCNA  # lazy: only needed for SCM operators
+ 	fullCNA_atoms = FullCNA(system,rCut)
+ 	CNA_profile_on_each_atom = fullCNA_atoms.get_normal_cna()
+ 	for index in range(len(CNA_profile_on_each_atom)):
+--- a/Organisms/GA/SCM_Scripts/T_SCM_Methods.py	2026-09-25 04:26:43.011332865 +0000
++++ b/Organisms/GA/SCM_Scripts/T_SCM_Methods.py	2026-09-25 04:43:34.452222916 +0000
+@@ -5,7 +5,6 @@
+ 
+ '''
+ 
+-from asap3.analysis.localstructure import FullCNA
+ from collections import Counter
+ import multiprocessing as mp
+ 
+@@ -23,6 +22,7 @@
+ 	:returns: The atomic CNA profile.
+ 	:rtype:   Counter
+ 	"""
++	from asap3.analysis.localstructure import FullCNA  # lazy: only needed for SCM operators
+ 	fullCNA_atoms = FullCNA(cluster,rCut)
+ 	_,total_CNA_profile = fullCNA_atoms.get_normal_and_total_cna()
+ 	
+--- a/setup.py	2026-09-25 04:26:43.013818237 +0000
++++ b/setup.py	2026-09-25 04:43:34.456478192 +0000
+@@ -67,7 +67,7 @@
+       zip_safe=False,
+       keywords = ['nanoclusters', 'nanoparticles', 'clusters', 'optimisation', 'genetic-algorithm', 'ase', 'university-of-otago', 'asap3', 'atomic-simulation-environment', 'predation-operator', 'fitness-operator', 'otago-university', 'common-neighbor-analysis', 'common-neighbour-analysis', 'jupyter', 'Colabs', 'Google Golabs'],
+       install_requires=[
+-          'numpy','scipy','ase==3.23.0','asap3==3.13.5','packaging','termcolor','tqdm'
++          'numpy','scipy','ase>=3.22','packaging','termcolor','tqdm'
+           #'Sphinx','sphinx-rtd-theme','sphinx-tabs','sphinxcontrib-applehelp','sphinxcontrib-devhelp',
+           #'sphinxcontrib-htmlhelp','sphinxcontrib-jsmath','sphinxcontrib-plantuml','sphinxcontrib-qthelp',
+           #'sphinxcontrib-serializinghtml','sphinxcontrib-wiki',
