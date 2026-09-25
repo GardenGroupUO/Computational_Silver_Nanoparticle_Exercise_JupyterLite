@@ -1,0 +1,86 @@
+/* A Colab-style green "Run" button in each code cell's left-hand prompt
+   column ([ ]:), always visible regardless of window width. Added by
+   static/custom.js. JupyterLab's own per-cell toolbar (top-right of the
+   active cell) hides itself when the cell isn't wide enough, which makes it
+   unsuitable for this: it can end up overlapping the cell's own code once
+   forced visible, so the button lives in the prompt gutter instead, which
+   never overlaps code and is never hidden.
+
+   Injected directly into the built HTML by tools/inject_custom_assets.py,
+   since neither of these is possible through JupyterLab's settings system:
+   there's no supported way to add a button outside the cell, and the one
+   "theme CSS override" setting that does exist only covers fonts. */
+.jp-InputArea-prompt {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  /* JupyterLab dims the whole prompt gutter to 50% opacity for non-active
+     cells (to de-emphasise the "[ ]:" execution count). That drags the run
+     button down with it, since a child's own opacity can't undo a parent's
+     -- so override it here to keep the button consistently vibrant. */
+  opacity: 1 !important;
+}
+
+.ir-run-button {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  /* matches the #008000 CodeMirror uses for Python keywords (import/from) */
+  color: #008000;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.ir-run-button:hover {
+  background: rgba(0, 128, 0, 0.15);
+  color: #006600;
+}
+
+.ir-run-button svg {
+  display: block;
+  width: 33px;
+  height: 33px;
+}
+
+/* Shown in place of the Run button while that cell's kernel call is in
+   flight -- a colourful ring (rather than JupyterLab's plain "[*]" text),
+   so it reads as active progress rather than looking stuck. */
+.ir-spinner {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.ir-spinner::before {
+  content: "";
+  display: block;
+  width: 25.5px;
+  height: 25.5px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #008000, #1976d2, #f9a825, #d32f2f, #008000);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.75px), #000 calc(100% - 3.75px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3.75px), #000 calc(100% - 3.75px));
+  animation: ir-spin 0.9s linear infinite;
+}
+
+@keyframes ir-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ir-spinner::before {
+    animation: none;
+  }
+}
