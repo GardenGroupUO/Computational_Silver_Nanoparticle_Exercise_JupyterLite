@@ -57,7 +57,10 @@ specifically bulk/recursive operations that stalled.
 
 Confirmed directly: the same `.venv` import (`jupyter lite build --help`, no real work)
 took 1s in a **local** venv (`/tmp/pj_venv`) vs. 120+s (or longer) in the OneDrive-hosted
-one.
+one. Most strikingly: one full `jupyter lite build` invocation against the original
+OneDrive `.venv`, left running in the background while I switched to a local venv
+instead, eventually completed — after **198 minutes** (vs. ~5s for the same build
+locally). That is the actual scale of the slowdown, not an exaggeration.
 
 This also likely explains the earlier, separate-seeming problem of new server processes
 not binding to any port — those were probably not stuck forever, just very slow to
