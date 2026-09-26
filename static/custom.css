@@ -43,6 +43,19 @@
   color: #006600;
 }
 
+/* The "prerequisite files loaded" checkmark state (see custom.js) --
+   filled rather than outline-only, so it reads as a distinct, completed
+   state at a glance rather than just another run button. */
+.ir-run-button.ir-run-done {
+  background: #008000;
+  color: #ffffff;
+}
+
+.ir-run-button.ir-run-done:hover {
+  background: #006600;
+  color: #ffffff;
+}
+
 .ir-run-button svg {
   display: block;
   width: 33px;
@@ -83,4 +96,29 @@
   .ir-spinner::before {
     animation: none;
   }
+}
+
+/* Editing a markdown cell (e.g. an answer placeholder like "A1: ...")
+   otherwise looks exactly like editing code: CodeMirror's default box
+   (grey background, bordered) plus a monospace font. Markdown cells are
+   prose, not code, so drop the code-editor chrome for them specifically --
+   code cells are untouched (this only matches inside .jp-MarkdownCell). */
+.jp-MarkdownCell .jp-InputArea-editor {
+  background: transparent;
+  border: none;
+}
+
+.jp-MarkdownCell .cm-content {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Helvetica, Arial, sans-serif;
+  font-size: 15px;
+}
+
+/* CodeMirror's markdown syntax highlighting still colours this text (e.g.
+   green for a blockquote line) via generated, unstable class names -- not
+   worth targeting those directly (they can change on any JupyterLab
+   update), so force plain black on every element inside instead. */
+.jp-MarkdownCell .cm-content,
+.jp-MarkdownCell .cm-content * {
+  color: #000000 !important;
 }
