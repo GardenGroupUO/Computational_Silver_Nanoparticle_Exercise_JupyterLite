@@ -45,8 +45,12 @@
 
 /* The "prerequisite files loaded" checkmark state (see custom.js) --
    filled rather than outline-only, so it reads as a distinct, completed
-   state at a glance rather than just another run button. */
+   state at a glance rather than just another run button. Half the size
+   of the regular run button: it's a passive confirmation, not something
+   that needs to invite clicking the way the run icon does. */
 .ir-run-button.ir-run-done {
+  width: 21px;
+  height: 21px;
   background: #008000;
   color: #ffffff;
 }
@@ -54,6 +58,11 @@
 .ir-run-button.ir-run-done:hover {
   background: #006600;
   color: #ffffff;
+}
+
+.ir-run-button.ir-run-done svg {
+  width: 16.5px;
+  height: 16.5px;
 }
 
 .ir-run-button svg {
