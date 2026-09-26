@@ -5,6 +5,8 @@ Nanoparticle Exercise. Runs entirely client-side on
 [JupyterLite](https://jupyterlite.readthedocs.io/) with a Pyodide kernel —
 no Google account, no server, no install. Just open the site and go.
 
+**[Start here → Part 1.1: Getting Started](https://gardengroupuo.github.io/Computational_Silver_Nanoparticle_Exercise_JupyterLite/notebooks/index.html?path=Part_1.1_Getting_Started.ipynb)**
+
 ## Credits
 
 This is a port of the original Google Colab exercise, adapted to run without
