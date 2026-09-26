@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-URL="${1:-http://localhost:8234/notebooks/index.html?path=Part_1.2_Intro_to_ASE.ipynb}"
+URL="${1:-http://localhost:8234/notebooks/index.html?path=Part_1.1_Getting_Started.ipynb}"
 PROFILE_DIR="$(mktemp -d -t jupyterlite-fresh-profile)"
 
 open -na "Google Chrome" --args --user-data-dir="$PROFILE_DIR" --no-first-run "$URL"
