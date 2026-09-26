@@ -42,7 +42,7 @@
     return null;
   }
 
-  function runCell(promptNode) {
+  function runCell(promptNode, commandId) {
     const cellNode = promptNode.closest('.jp-Cell');
     if (!cellNode) return;
     const panel = findNotebookPanel(cellNode);
@@ -50,7 +50,7 @@
     const index = panel.content.widgets.findIndex((w) => w.node === cellNode);
     if (index === -1) return;
     panel.content.activeCellIndex = index;
-    window.jupyterapp.commands.execute('notebook:run-cell-and-select-next');
+    window.jupyterapp.commands.execute(commandId || 'notebook:run-cell-and-select-next');
   }
 
   function makeButton(prompt) {
@@ -142,9 +142,40 @@
     });
   }
 
+  // Cells marked "# hide-code-video" (the YouTubeVideo() cells) run themselves
+  // the moment their kernel is idle, so the embedded player is visible without
+  // the student clicking anything -- it isn't autoplaying, just loaded and
+  // paused, same as if they'd clicked the run button themselves. This can't
+  // be done by saving the video's HTML output into the notebook file instead:
+  // JupyterLab's sanitizer strips <iframe> from any output that wasn't
+  // produced by the *current* kernel session, so a "pre-baked" output only
+  // renders once someone has clicked "Trust Notebook" -- not the default for
+  // a first-time visitor. Actually running the cell live sidesteps that
+  // entirely. `ir-video-ran` is set the moment we ask for it to run so a
+  // later mutation callback (there are many, per cell edit) doesn't queue it
+  // twice; it deliberately doesn't get cleared on kernel restart, matching
+  // this project's "hide-code" cells elsewhere, which also need a manual
+  // re-click after a restart.
+  function autoRunVideoCells() {
+    document.querySelectorAll('.jp-CodeCell').forEach((cell) => {
+      if (cell.dataset.irVideoRan === '1') return;
+      const code = cell.querySelector('.cm-content');
+      if (!code || !(code.textContent || '').includes('# hide-code-video')) return;
+      const prompt = cell.querySelector('.jp-InputArea-prompt');
+      if (!prompt || isBusy(prompt)) return;
+      const panel = findNotebookPanel(cell);
+      const kernel = panel && panel.sessionContext && panel.sessionContext.session
+        && panel.sessionContext.session.kernel;
+      if (!kernel || kernel.status !== 'idle') return;
+      cell.dataset.irVideoRan = '1';
+      runCell(prompt, 'notebook:run-cell');
+    });
+  }
+
   function syncAll() {
     document.querySelectorAll('.jp-CodeCell .jp-InputArea-prompt').forEach(sync);
     markHiddenCodeCells();
+    autoRunVideoCells();
   }
 
   syncAll();

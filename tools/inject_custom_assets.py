@@ -1,4 +1,5 @@
-"""Link static/custom.css and static/custom.js into the built site.
+"""Link static/custom.css and static/custom.js into the built site, and make
+sure exposeAppInBrowser survives the build.
 
 Usage: python tools/inject_custom_assets.py _output
 
@@ -12,7 +13,19 @@ history/reasoning). Adapted APPS for this project's primary interface: we
 serve the Notebook-7-style UI (`notebooks`/`tree`), not full JupyterLab, so
 those are the app builds that need the injected assets; `lab` is included too
 since it's still built and available as a fallback.
+
+`custom.js` finds the active notebook via `window.jupyterapp`, which only
+exists because the project's own `jupyter-lite.json` sets
+"exposeAppInBrowser": true. A from-scratch `jupyter lite build` (every CI run;
+locally, only after clearing `_output` and `.jupyterlite.doit.db`) drops that
+key somewhere in jupyterlite-core's config-merge step -- confirmed missing
+from the built jupyter-lite.json even though the merge log claims to have
+read the project's file. Cheaper to re-add it after the fact here than to
+chase the merge bug upstream; every one of custom.js's features (the run
+button, hidden-code cells, the video auto-run) silently does nothing without
+it, with no error to notice.
 """
+import json
 import shutil
 import sys
 from pathlib import Path
@@ -25,9 +38,24 @@ TAGS = {
 }
 
 
+def ensure_expose_app_in_browser(dist_dir, apps):
+    paths = [dist_dir / "jupyter-lite.json"] + [dist_dir / app / "jupyter-lite.json" for app in apps]
+    for path in paths:
+        if not path.is_file():
+            continue
+        config = json.loads(path.read_text())
+        jcd = config.setdefault("jupyter-config-data", {})
+        if jcd.get("exposeAppInBrowser") is not True:
+            jcd["exposeAppInBrowser"] = True
+            path.write_text(json.dumps(config))
+            print(f"patched exposeAppInBrowser into {path}")
+
+
 def main(dist_dir):
     dist_dir = Path(dist_dir)
     static_dir = Path(__file__).parent.parent / "static"
+
+    ensure_expose_app_in_browser(dist_dir, APPS)
 
     for app in APPS:
         app_dir = dist_dir / app
