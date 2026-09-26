@@ -96,8 +96,25 @@
     }
   }
 
+  // The "%pip install ..." setup cell in every notebook: students only
+  // need to click it, never read or edit it. Marking the cell (rather than
+  // using JupyterLab's own input-collapse metadata) keeps the prompt
+  // gutter -- and our run button in it -- structurally untouched; the
+  // built-in collapse replaces that whole area with an empty placeholder,
+  // which would remove the button along with the code. custom.css hides
+  // the editor for cells with this class; nothing else about the cell
+  // (running it, its output) changes.
+  function markSetupCells() {
+    document.querySelectorAll('.jp-CodeCell').forEach((cell) => {
+      const code = cell.querySelector('.cm-content');
+      const isSetup = !!code && (code.textContent || '').includes('%pip install');
+      cell.classList.toggle('ir-hide-code', isSetup);
+    });
+  }
+
   function syncAll() {
     document.querySelectorAll('.jp-CodeCell .jp-InputArea-prompt').forEach(sync);
+    markSetupCells();
   }
 
   syncAll();
