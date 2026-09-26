@@ -53,9 +53,36 @@
    students only click it, never read or edit it, so hide the code text
    itself. The prompt gutter -- and the run button in it -- is a separate
    element and stays untouched, so the cell is still fully runnable; its
-   output (the "Files loaded" confirmation) is unaffected too. */
-.ir-hide-code .jp-InputArea-editor {
+   output (the "Files loaded" confirmation) is unaffected too. Clicking
+   the "1 cell hidden" label (below) adds .ir-code-revealed, which shows
+   the code again. */
+.ir-hide-code:not(.ir-code-revealed) .jp-InputArea-editor {
   display: none;
+}
+
+.ir-hidden-label {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  align-self: center;
+  padding: 4px 8px;
+  color: #757575;
+  font-size: 13px;
+  font-style: italic;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ir-hidden-label:hover {
+  color: #424242;
+}
+
+.ir-hide-code .ir-hidden-label {
+  display: flex;
+}
+
+.ir-hidden-label-arrow {
+  font-style: normal;
 }
 
 /* Shown in place of the Run button while that cell's kernel call is in

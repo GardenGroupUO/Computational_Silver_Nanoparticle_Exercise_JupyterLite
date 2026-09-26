@@ -96,6 +96,34 @@
     }
   }
 
+  // A small Colab-style "1 cell hidden" label with a disclosure triangle,
+  // inserted once per setup cell, right next to the run button (the code
+  // editor next to it is display:none, so this is the only other thing in
+  // that row). Clicking it toggles .ir-code-revealed on the cell, which
+  // custom.css uses to show the code anyway -- nothing is truly hidden,
+  // just tucked away by default, the same as Colab's own convention.
+  function ensureHiddenLabel(cell) {
+    const inputArea = cell.querySelector('.jp-InputArea');
+    if (!inputArea || inputArea.querySelector('.ir-hidden-label')) return;
+    const label = document.createElement('div');
+    label.className = 'ir-hidden-label';
+    label.title = 'Click to show/hide the code in this cell';
+    const arrow = document.createElement('span');
+    arrow.className = 'ir-hidden-label-arrow';
+    arrow.textContent = '▸';
+    const text = document.createElement('span');
+    text.textContent = '1 cell hidden';
+    label.append(arrow, text);
+    label.addEventListener('click', (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      const revealed = cell.classList.toggle('ir-code-revealed');
+      arrow.textContent = revealed ? '▾' : '▸';
+      text.textContent = revealed ? 'Hide code' : '1 cell hidden';
+    });
+    inputArea.appendChild(label);
+  }
+
   // The "%pip install ..." setup cell in every notebook: students only
   // need to click it, never read or edit it. Marking the cell (rather than
   // using JupyterLab's own input-collapse metadata) keeps the prompt
@@ -109,6 +137,7 @@
       const code = cell.querySelector('.cm-content');
       const isSetup = !!code && (code.textContent || '').includes('%pip install');
       cell.classList.toggle('ir-hide-code', isSetup);
+      if (isSetup) ensureHiddenLabel(cell);
     });
   }
 
