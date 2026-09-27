@@ -25,19 +25,54 @@ has not been verified yet.
 `requirements-build.txt` pins `jupyterlite-core`/`jupyterlite-pyodide-kernel` to
 0.8.4/0.8.6 (bundling Python 3.14, NumPy 2.4.6) as of the "upgrade jupyterlite"
 work. This replaces the `<0.7` pin (0.6.4/0.6.1) that everything below was
-originally tested against. The upgrade was forced by a real bug: notebooks
-opened via any same-tab navigation (a redirect, or a plain link click, not
-just a freshly-typed URL) reliably crashed to a blank page on the 0.6.x line,
-confirmed on the deployed site and reproduced consistently in local testing.
-Upgrading was the only fix found; the root cause inside jupyterlite-core was
-never fully identified (windowingMode and cross-origin-isolation were both
-investigated and ruled out first).
+originally tested against.
 
-**Not yet re-verified against 0.8.4/0.8.6**: everything in the section below
-was tested against the old 0.6.x/Pyodide-0.27.7 stack. NumPy 2.0.2 → 2.4.6 and
-Python 3.12 → 3.14 are both real version jumps that could plausibly affect
-`gupta_numpy.py`'s ~1e-15 eV match to ASAP, the Organisms GA, or ASE behaviour.
-Re-run the checks below (or equivalent ones) before trusting them again.
+Two separate bugs got tangled together chasing a "every notebook is blank on
+first load" report, worth untangling for anyone reading this later:
+
+1. **The actual cause**: the site's root `index.html` had been replaced
+   (for the short-link feature -- see `tools/inject_custom_assets.py`'s
+   `install_root_redirect`) with custom content that dropped the
+   `<script id="jupyter-config-data">` tag every JupyterLite-generated page
+   ships by default. Every app page (`notebooks/`, `lab/`, `tree/`) fetches
+   the site root's `index.html` at load time to inherit shared config
+   (`getPageConfig()` in `config-utils.js`), and crashes on a null dereference
+   if that tag is missing -- confirmed from a real stack trace, and fixed by
+   keeping the (invisible, functionally inert) tag alongside our own visible
+   link. This alone explains why *direct* links were affected too, not just
+   the short link itself.
+2. **windowingMode and cross-origin isolation** were both investigated at
+   length while chasing (1) above and ruled out -- neither was the cause.
+3. **The version upgrade** was made based on strong local-testing evidence
+   (old version flaky/crashing, new version reliable) gathered *before* (1)
+   was found, i.e. before the real cause was known. It's possible 0.6.x would
+   have been equally fine once (1) was fixed and this upgrade turned out to
+   be unnecessary -- that combination was never isolated and tested on its
+   own. It's being kept anyway: reverting now would just be undoing a
+   change that's since been verified compatible (below) and confirmed
+   working end-to-end on the deployed site, for no clear benefit.
+
+**Re-verified against 0.8.4/0.8.6** (natively, matching NumPy 2.4.6 exactly;
+not inside Pyodide itself, which this session's browser-automation pane
+couldn't reliably keep a kernel alive long enough to drive -- native Python
+with the same NumPy version is a reasonable proxy for numerical behaviour,
+though not a substitute for an in-browser check if one becomes convenient):
+
+- `gupta_numpy.py` vs a real `asap3` Gupta calculator on an identical 147-atom
+  displaced icosahedron: matches to ~1e-13 eV energy / ~1e-13 relative force
+  difference under NumPy 2.4.6 -- consistent with the ~1e-14 eV match
+  reproduced under the original NumPy 2.0.2 pin, i.e. no regression.
+- Organisms GA: a 5-generation run (`Ag55`, `RunMinimisation_Ag_numpy`)
+  completes normally in ~15s with sensible energies/fitness values.
+- `silver_nanoprism_growing_model` (the vectorised growth model): runs
+  cleanly from `small_initial_seed.xyz`, correct atom-by-atom
+  square/triangle-face bookkeeping.
+- `make_nanoparticle()` (ASE-based, Part 2.1): produces a 55-atom Ag cluster
+  with a sane diameter.
+- `matplotlib` 3.11.2: basic plotting works.
+
+**Still not verified** (pre-existing gap, not new to this upgrade): the X3D
+viewers, per the working agreement above.
 
 ## What has already been tested (Pyodide 0.27.7 under Node.js, Python 3.12, NumPy 2.0.2)
 
