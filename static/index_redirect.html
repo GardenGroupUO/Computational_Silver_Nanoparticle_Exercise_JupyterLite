@@ -3,6 +3,17 @@
 <head>
   <meta charset="utf-8">
   <title>Computational Silver Nanoparticle Exercise</title>
+  <!--
+    Required even though nothing on this page reads it: every other app page
+    (notebooks/, lab/, tree/) fetches the site root's index.html at load time
+    to inherit shared jupyter-config-data (see getPageConfig() in
+    config-utils.js), and crashes if this tag is missing. This was the actual
+    cause of the "every notebook is blank" bug -- not the jupyterlite
+    version, not windowingMode, not cross-origin isolation, all of which were
+    investigated first. An empty object is exactly what JupyterLite's own
+    generated root page ships here by default.
+  -->
+  <script id="jupyter-config-data" type="application/json">{}</script>
 </head>
 <body>
   <p>
