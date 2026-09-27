@@ -20,6 +20,25 @@ reviewable steps, explain what changed, and do not push without being asked. Ser
 so the user can check each notebook in a real browser; rendering of the 3D viewers in particular
 has not been verified yet.
 
+## Kernel/build version, and why it moved
+
+`requirements-build.txt` pins `jupyterlite-core`/`jupyterlite-pyodide-kernel` to
+0.8.4/0.8.6 (bundling Python 3.14, NumPy 2.4.6) as of the "upgrade jupyterlite"
+work. This replaces the `<0.7` pin (0.6.4/0.6.1) that everything below was
+originally tested against. The upgrade was forced by a real bug: notebooks
+opened via any same-tab navigation (a redirect, or a plain link click, not
+just a freshly-typed URL) reliably crashed to a blank page on the 0.6.x line,
+confirmed on the deployed site and reproduced consistently in local testing.
+Upgrading was the only fix found; the root cause inside jupyterlite-core was
+never fully identified (windowingMode and cross-origin-isolation were both
+investigated and ruled out first).
+
+**Not yet re-verified against 0.8.4/0.8.6**: everything in the section below
+was tested against the old 0.6.x/Pyodide-0.27.7 stack. NumPy 2.0.2 → 2.4.6 and
+Python 3.12 → 3.14 are both real version jumps that could plausibly affect
+`gupta_numpy.py`'s ~1e-15 eV match to ASAP, the Organisms GA, or ASE behaviour.
+Re-run the checks below (or equivalent ones) before trusting them again.
+
 ## What has already been tested (Pyodide 0.27.7 under Node.js, Python 3.12, NumPy 2.0.2)
 
 - Parts 1–3 only need ASE. `ase==3.22.0` (pure-Python wheel) installs and runs unchanged.

@@ -40,16 +40,26 @@ TAGS = {
 
 def install_root_redirect(dist_dir, static_dir):
     """Replace the built site's root index.html (JupyterLite's own app
-    launcher/chooser page) with a redirect straight into Part 1.1.
+    launcher/chooser page) with a plain landing page linking to Part 1.1.
 
     Gives students and anyone we share the link with a short URL (just the
-    site root) instead of the notebooks/index.html?path=... form. The
-    launcher page it replaces is still reachable directly at notebooks/,
-    lab/, and tree/ if ever needed.
+    site root) to start from, instead of needing the full
+    notebooks/index.html?path=... form. Deliberately a real <a href>, not a
+    script-driven redirect (meta-refresh or location.replace/assign): every
+    such mechanism tried here reliably reproduced a blank-page crash in
+    notebooks/index.html (confirmed both locally and on the deployed site)
+    that a direct link or a real click doesn't -- root-caused down to
+    "reached via same-tab navigation" rather than anything about the
+    redirect's specific implementation, and never fully explained beyond
+    that. A plain link sidesteps the whole class of mechanism rather than
+    relying on having correctly identified and fixed it.
+
+    The launcher page this replaces is still reachable directly at
+    notebooks/, lab/, and tree/ if ever needed.
     """
     target = dist_dir / "index.html"
     target.write_text((static_dir / "index_redirect.html").read_text())
-    print(f"installed root redirect at {target}")
+    print(f"installed root landing page at {target}")
 
 
 def ensure_expose_app_in_browser(dist_dir, apps):
